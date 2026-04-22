@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: discord_user
+      POSTGRES_PASSWORD: discord_pass
+      POSTGRES_DB: discord_db
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U discord_user -d discord_db']
+      interval: 10s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: discord_user
+      DB_PASS: discord_pass
+      DB_NAME: discord_db
+      JWT_SECRET: secreto_jwt_discord
+    depends_on:
+      postgres:
+        condition: service_healthy
